@@ -8,18 +8,21 @@
         body{
             margin: 0; 
             background: #333; 
+            margin-left: 25%;
+            margin-right: 25%;
         } 
     </style>
 </head>
-<body><script src="https://cdn.jsdelivr.net/phaser/2.4.6/phaser.min.js"></script>
+<body>
 	<script>
-var game = new Phaser.Game(800, 600, Phaser.CANVAS, 'phaser-example', { preload: preload/*, create: create, update: update, render: render */});
+var game = new Phaser.Game(400, 2400, Phaser.CANVAS, 'phaser-example', { preload: preload, create: create, update: update, render: render });
 
 function preload() {
 
-   game.load.tilemap('mario', './assets/tilemaps/maps/super_mario.json', null, Phaser.Tilemap.TILED_JSON);
-    game.load.image('tiles', './assets/tilemaps/tiles/super_mario.png');
-    game.load.image('player', './assets/tilemaps/sprites/phaser-dude.png');
+    game.load.tilemap('World1', 'assets/tilemaps/maps/World1.json', null, Phaser.Tilemap.TILED_JSON);
+    //  Next we load the tileset. This is just an image, loaded in via the normal way we load images:
+    game.load.image('tiles', 'assets/tilemaps/tiles/super_mario.png');
+    game.load.spritesheet('player', 'assets/sprites/dude.png',32, 48);
 
 }
 
@@ -35,38 +38,44 @@ function create() {
 
     game.stage.backgroundColor = '#787878';
 
-    map = game.add.tilemap('mario');
+    map = game.add.tilemap('World1');
 
-    map.addTilesetImage('SuperMarioBros-World1-1', 'tiles');
+    map.addTilesetImage('World1', 'tiles');
 
     //  14 = ? block
     // map.setCollisionBetween(14, 15);
 
-    map.setCollisionBetween(15, 16);
-    map.setCollisionBetween(20, 25);
-    map.setCollisionBetween(27, 29);
-    map.setCollision(40);
+    map.setCollisionBetween(887, 900);
+    map.setCollisionBetween(1043, 1045);
+
+    //map.setCollision(40,true,true,true,true);
     
-    layer = map.createLayer('World1');
+    World1 = map.createLayer('World1');
 
     //  Un-comment this on to see the collision tiles
     // layer.debug = true;
 
-    layer.resizeWorld();
-
-    p = game.add.sprite(32, 32, 'player');
+    //layer.resizeWorld();
+ Phaser.Physics.Arcade.collide(p, World1);
+    p = game.add.sprite(60, 1500, 'player');
 
     game.physics.enable(p);
 
-    game.physics.arcade.gravity.y = 250;
+    game.physics.arcade.gravity.y = 350;
 
     p.body.bounce.y = 0.2;
     p.body.linearDamping = 1;
     p.body.collideWorldBounds = true;
+    
+
+	p.animations.add('left', [0, 1, 2, 3], 10, true);
+    p.animations.add('right', [5, 6, 7, 8], 10, true);
 
     game.camera.follow(p);
 
     cursors = game.input.keyboard.createCursorKeys();
+   
+
 
 }
 
@@ -76,22 +85,36 @@ function update() {
 
     p.body.velocity.x = 0;
 
-    if (cursors.up.isDown)
-    {
-        if (p.body.onFloor())
-        {
-            p.body.velocity.y = -200;
-        }
-    }
 
-    if (cursors.left.isDown)
-    {
-        p.body.velocity.x = -150;
-    }
-    else if (cursors.right.isDown)
-    {
-        p.body.velocity.x = 150;
-    }
+
+	if (cursors.left.isDown)
+        {
+            //  Move to the left
+            p.body.velocity.x = -150;
+
+            p.animations.play('left');
+        }
+        else if (cursors.right.isDown)
+        {
+            //  Move to the right
+            p.body.velocity.x = 150;
+
+            p.animations.play('right');
+        }
+        else
+        {
+            //  Stand still
+            p.animations.stop();
+
+            p.frame = 4;
+        }
+
+        //  Allow the player to jump if they are touching the ground.
+        if (cursors.up.isDown && p.body.touching.down)
+        {
+        	
+            p.body.velocity.y = -350;
+        }
 
 }
 
