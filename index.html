@@ -15,7 +15,7 @@
 </head>
 <body>
 	<script>
-var game = new Phaser.Game(400, 2400, Phaser.CANVAS, 'phaser-example', { preload: preload, create: create, update: update, render: render });
+var game = new Phaser.Game(window.screen.availWidth, window.screen.availHeight, Phaser.CANVAS, 'phaser-example', { preload: preload, create: create, update: update, render: render });
 
 function preload() {
 
@@ -23,7 +23,6 @@ function preload() {
     //  Next we load the tileset. This is just an image, loaded in via the normal way we load images:
     game.load.image('tiles', 'assets/tilemaps/tiles/super_mario.png');
     game.load.spritesheet('player', 'assets/sprites/dude.png',32, 48);
-
 }
 
 var map;
@@ -43,21 +42,18 @@ function create() {
     map.addTilesetImage('World1', 'tiles');
 
     //  14 = ? block
-    // map.setCollisionBetween(14, 15);
-
-    map.setCollisionBetween(887, 900);
-    map.setCollisionBetween(1043, 1045);
-
-    //map.setCollision(40,true,true,true,true);
+    map.setCollisionBetween(887, 941);
+    map.setCollisionBetween(1043, 1045);    
+    map.setCollision(40);
     
     World1 = map.createLayer('World1');
 
     //  Un-comment this on to see the collision tiles
     // layer.debug = true;
 
-    //layer.resizeWorld();
- Phaser.Physics.Arcade.collide(p, World1);
-    p = game.add.sprite(60, 1500, 'player');
+    layer = map.createLayer('World1');
+    layer.resizeWorld();
+    p = game.add.sprite(60, 2200, 'player');
 
     game.physics.enable(p);
 
@@ -66,13 +62,14 @@ function create() {
     p.body.bounce.y = 0.2;
     p.body.linearDamping = 1;
     p.body.collideWorldBounds = true;
+    p.body.checkCollision.up = false;
     
 
 	p.animations.add('left', [0, 1, 2, 3], 10, true);
     p.animations.add('right', [5, 6, 7, 8], 10, true);
-
+    //game.physics.enable(p);
     game.camera.follow(p);
-
+    
     cursors = game.input.keyboard.createCursorKeys();
    
 
@@ -85,7 +82,13 @@ function update() {
 
     p.body.velocity.x = 0;
 
-
+if (cursors.up.isDown)
+    {
+        if (p.body.onFloor())
+        {
+            p.body.velocity.y = -250;
+        }
+    }
 
 	if (cursors.left.isDown)
         {
@@ -109,12 +112,6 @@ function update() {
             p.frame = 4;
         }
 
-        //  Allow the player to jump if they are touching the ground.
-        if (cursors.up.isDown && p.body.touching.down)
-        {
-        	
-            p.body.velocity.y = -350;
-        }
 
 }
 
